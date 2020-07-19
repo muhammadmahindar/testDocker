@@ -1,0 +1,61 @@
+version: "3.7"
+services:
+  app:
+    build:
+      args:
+        user: mahin
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: darson
+    container_name: darson-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - darson
+
+  db:
+    image: mysql:5.7
+    container_name: darson-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./mysql:/docker-entrypoint-initdb.d
+    networks:
+      - darson
+
+  nginx:
+    image: nginx:alpine
+    container_name: darson-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./nginx:/etc/nginx/conf.d
+    networks:
+      - darson
+
+  proxysql:
+    image: proxysql/proxysql
+    container_name: darson-proxysql
+    restart: unless-stopped
+    ports:
+      - "16032:6032"
+      - "16033:6033"
+    volumes:
+      - ./proxysql/proxysql.cnf:/etc/proxysql.cnf
+    networks:
+      - darson
+
+networks:
+  darson:
+    driver: bridge
