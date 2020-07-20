@@ -8,6 +8,8 @@ services:
       context: ./
       dockerfile: Dockerfile
     image: darson
+    depends_on:
+      - db
     container_name: darson-app
     restart: unless-stopped
     working_dir: /var/www/
@@ -36,6 +38,8 @@ services:
     image: nginx:alpine
     container_name: darson-nginx
     restart: unless-stopped
+    depends_on:
+      - app
     ports:
       - "8000:80"
     volumes:
@@ -48,6 +52,8 @@ services:
     image: proxysql/proxysql
     container_name: darson-proxysql
     restart: unless-stopped
+    depends_on:
+      - db
     ports:
       - "16032:6032"
       - "16033:6033"
